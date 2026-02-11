@@ -1,52 +1,49 @@
-// 1st fix
 pipeline {
-    agent any   // IMPORTANT: controller does NOT run jobs
+    agent any
 
-    options {
-        timestamps()
-        disableConcurrentBuilds()
+    triggers {
+        githubPush()
     }
 
     stages {
-
         stage('Checkout') {
-            agent any
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Avtan88/jenkins-ci-lab.git'
+                checkout scm
             }
         }
 
-        stage('Build on mac1') {
-            agent { label 'mac-agent' }
-            steps {
-                sh '''
-                  echo "Build stage"
-                  ./app/app.sh
-                '''
-            }
-        }
+        stage('Parallel Jobs') {
+            parallel {
+                stage('Lint') {
+                    steps {
+                        echo 'Running lint'
+                        sleep 3
+                    }
+                }
 
-        stage('Test on mac2') {
-            agent { label 'node-mac1' }
-            steps {
-                sh '''
-                  echo "Test stage"
-                  ./tests/test.sh
-                '''
+                stage('Unit Tests') {
+                    steps {
+                        echo 'Running unit tests'
+                        sleep 5
+                    }
+                }
+
+                stage('Build') {
+                    steps {
+                        echo 'Building application'
+                        sleep 4
+                    }
+                }
             }
         }
     }
 
     post {
         success {
-            echo "Pipeline SUCCESS"
+            echo 'Pipeline completed successfully'
         }
         failure {
-            echo "Pipeline FAILED"
-        }
-        always {
-            cleanWs()
+            echo 'Pipeline failed'
         }
     }
 }
