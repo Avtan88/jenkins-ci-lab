@@ -1,5 +1,5 @@
 pipeline {
-    agent none   // IMPORTANT: controller does NOT run jobs
+    agent any   // IMPORTANT: controller does NOT run jobs
 
     options {
         timestamps()
